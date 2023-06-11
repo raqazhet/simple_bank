@@ -5,8 +5,11 @@ createdb:
 dropdb:
 	docker exec -it test1 dropdb simple_bank
 migrationup:
-	migrate -path ./migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path ./migrations -database 'postgres://root:secret@localhost:5432/test?sslmode=disable' up
 migrationdown:
-	migrate -path ./migrations -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" down
+	migrate -path ./migrations -database 'postgres://root:secret@localhost:5432/test?sslmode=disable' down
 
 .PHONY: postgres createdb dropdb migrationup migrationdown
+
+test:
+	go test -v -cover ./...
