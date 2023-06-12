@@ -26,8 +26,8 @@ func TestTransferTx(t *testing.T) {
 				ToAccountID:   account2.ID,
 				Amount:        amount,
 			})
-			resullts <- res
 			errs <- err
+			resullts <- res
 		}()
 	}
 	for i := 0; i < n; i++ {

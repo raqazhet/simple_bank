@@ -15,7 +15,7 @@ type CreateTransferParams struct {
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (model.Transfer, error) {
 	query := `insert into transfers (from_account_id,to_account_id,amount)
-	VALUES(?,?,?)
+	VALUES($1,$2,$3)
 	returning id,from_account_id,to_account_id,amount,created_at`
 	transfer := model.Transfer{}
 	if err := q.db.QueryRowContext(ctx, query, arg.FromAccountID, arg.ToAccountID, arg.Amount).Scan(

@@ -22,18 +22,6 @@ func NewStorage(db *sql.DB) *Storage {
 	}
 }
 
-type TransferTxParams struct {
-	// is id of the account where money will be sent from
-	FromAccountID int `json:"from_account_id"`
-	// is the id of the account where money will be sent to
-	ToAccountID int `json:"to_account_id"`
-	// And the last field is the Amount of money to be sent
-	Amount int `json:"amount"`
-}
-
-// The struct contains the result of the transfer transaction
-// It has 5 fields
-
 func (r *Storage) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
