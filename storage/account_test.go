@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"bank/model"
+	"bank/util"
 
 	"github.com/stretchr/testify/require"
 )
@@ -16,9 +17,9 @@ func TestCreateAccount(t *testing.T) {
 
 func createRandomAccount(t *testing.T) model.Account {
 	arg := CreateAccountParams{
-		Owner:    "razaq",
-		Balance:  200,
-		Currency: "USD",
+		Owner:    util.RandomOwner(),
+		Balance:  util.RandomMoney(),
+		Currency: util.RandomCurrency(),
 	}
 	account, err := testQueries.CreateAccount(context.Background(), arg)
 	// Basically,this command will check that the error must be nil and will automatically fail the test if
