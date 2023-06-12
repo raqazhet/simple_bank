@@ -31,7 +31,19 @@ func (q *Queries) GetAccountById(ctx context.Context, accountId int) (model.Acco
 				LIMIT 1`
 	account := model.Account{}
 	if err := q.db.QueryRowContext(ctx, query, accountId).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {
-		log.Printf("createAccount storage err: %v", err)
+		log.Printf("getAccountByID storage err: %v", err)
+		return model.Account{}, err
+	}
+	return account, nil
+}
+
+func (q Queries) GetAccountForUpdate(ctx context.Context, accountId int) (model.Account, error) {
+	query := `SELECT id,owner,balance,currency,created_at from accounts
+	WHERE id = $1 LIMIT 1
+	FOR UPDATE`
+	account := model.Account{}
+	if err := q.db.QueryRowContext(ctx, query, accountId).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {
+		log.Printf("getAccountForUpdate storage err: %v", err)
 		return model.Account{}, err
 	}
 	return account, nil
