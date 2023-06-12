@@ -40,8 +40,8 @@ func (q *Queries) GetAccountById(ctx context.Context, accountId int) (model.Acco
 func (q *Queries) GetAllAccounts(ctx context.Context) ([]model.Account, error) {
 	query := `SELECT * FROM accounts 
 	ORDER BY id
-	LIMIT $1
-	OFFSET $2`
+	LIMIT 5
+	OFFSET 5`
 	accounts := []model.Account{}
 	rows, err := q.db.QueryContext(ctx, query)
 	if err != nil {
@@ -65,17 +65,18 @@ func (q *Queries) GetAllAccounts(ctx context.Context) ([]model.Account, error) {
 }
 
 type UpdateAccountParams struct {
-	ID      int    `json:"id"`
-	Balance string `json:"balance"`
+	ID      int `json:"id"`
+	Balance int `json:"balance"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (model.Account, error) {
 	query := `Update accounts
-	SET balance = $2
-	WHERE id =$1`
+	SET balance = $1
+	WHERE id =$2
+	RETURNING id,owner,balance,currency,created_at`
 	account := model.Account{}
-	if err := q.db.QueryRowContext(ctx, query, arg.ID, arg.Balance).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {
-		log.Printf("createAccount storage err: %v", err)
+	if err := q.db.QueryRowContext(ctx, query, arg.Balance, arg.ID).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {
+		log.Printf("updateAccount storage err: %v", err)
 		return model.Account{}, err
 	}
 	return account, nil
