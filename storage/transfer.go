@@ -44,30 +44,18 @@ func (r *Storage) TransferTx(ctx context.Context, arg TransferTxParams) (model.T
 		if err != nil {
 			return err
 		}
-		// move money out of account1
-		fmt.Println(txName, "get account 1")
-		account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
-		if err != nil {
-			return err
-		}
 		fmt.Println(txName, "update account 1")
-		result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID:      arg.FromAccountID,
-			Balance: account1.Balance - arg.Amount,
+		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalance{
+			Id:     arg.FromAccountID,
+			Amount: -arg.Amount,
 		})
 		if err != nil {
 			return err
 		}
-		// Move money out of account2
-		fmt.Println(txName, "get account 2")
-		account2, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
-		if err != nil {
-			return err
-		}
 		fmt.Println(txName, "update account 2")
-		result.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID:      arg.ToAccountID,
-			Balance: arg.Amount + account2.Balance,
+		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalance{
+			Id:     arg.ToAccountID,
+			Amount: arg.Amount,
 		})
 		if err != nil {
 			return err
@@ -75,10 +63,6 @@ func (r *Storage) TransferTx(ctx context.Context, arg TransferTxParams) (model.T
 		// TODO: update accoun'ts balance
 		return nil
 	})
-	// fmt.Println("result.transfer", result.Transfer)
-	// fmt.Println("res.FromEnt", result.FromEntry)
-	// fmt.Println("res.ToEnt", result.ToEntry)
-	// fmt.Println(result)
 	if err != nil {
 		return model.TransferTxResult{}, err
 	}

@@ -40,7 +40,7 @@ func (q *Queries) GetAccountById(ctx context.Context, accountId int) (model.Acco
 func (q Queries) GetAccountForUpdate(ctx context.Context, accountId int) (model.Account, error) {
 	query := `SELECT id,owner,balance,currency,created_at from accounts
 	WHERE id = $1 LIMIT 1
-	FOR UPDATE`
+	FOR NO KEY UPDATE`
 	account := model.Account{}
 	if err := q.db.QueryRowContext(ctx, query, accountId).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {
 		log.Printf("getAccountForUpdate storage err: %v", err)
@@ -103,4 +103,24 @@ func (q *Queries) DeleteAccount(ctx context.Context, accountId int) error {
 		return err
 	}
 	return nil
+}
+
+type AddAccountBalance struct {
+	Amount int `json:"amount"`
+	Id     int `json:"id"`
+}
+
+func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalance) (model.Account, error) {
+	query := `Update accounts SET balance = balance + $1
+	WHERE id = $2
+	RETURNING id,owner,balance,currency,created_at`
+	account := model.Account{}
+	args := []any{arg.Amount, arg.Id}
+	if err := q.db.QueryRowContext(ctx, query, args...).Scan(
+		&account.ID, &account.Owner, &account.Balance,
+		&account.Currency, &account.CreatedAt); err != nil {
+		log.Printf("AddAccountBalance err: %v", err)
+		return model.Account{}, err
+	}
+	return account, nil
 }
