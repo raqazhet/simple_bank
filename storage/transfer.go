@@ -44,27 +44,47 @@ func (r *Storage) TransferTx(ctx context.Context, arg TransferTxParams) (model.T
 		if err != nil {
 			return err
 		}
-		fmt.Println(txName, "update account 1")
-		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalance{
-			Id:     arg.FromAccountID,
-			Amount: -arg.Amount,
-		})
-		if err != nil {
-			return err
+		if arg.FromAccountID < arg.ToAccountID {
+			fmt.Println(txName, "update account 1")
+			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, arg.ToAccountID, -arg.Amount, arg.Amount)
+			if err != nil {
+				return err
+			}
+
+		} else {
+			fmt.Println(txName, "update account 2")
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.FromAccountID, arg.ToAccountID, -arg.Amount, -arg.Amount)
+			if err != nil {
+				return err
+			}
 		}
-		fmt.Println(txName, "update account 2")
-		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalance{
-			Id:     arg.ToAccountID,
-			Amount: arg.Amount,
-		})
-		if err != nil {
-			return err
-		}
+
 		// TODO: update accoun'ts balance
-		return nil
+		return err
 	})
 	if err != nil {
 		return model.TransferTxResult{}, err
 	}
 	return result, nil
+}
+
+func addMoney(ctx context.Context,
+	q *Queries, accountid1, accountid2,
+	amount1, amount2 int,
+) (account1, account2 model.Account, err error) {
+	account1, err = q.AddAccountBalance(ctx, AddAccountBalance{
+		Id:     accountid1,
+		Amount: amount1,
+	})
+	if err != nil {
+		return
+	}
+	account2, err = q.AddAccountBalance(ctx, AddAccountBalance{
+		Id:     accountid2,
+		Amount: amount2,
+	})
+	if err != nil {
+		return
+	}
+	return
 }

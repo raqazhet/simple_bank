@@ -28,7 +28,8 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (m
 func (q *Queries) GetAccountById(ctx context.Context, accountId int) (model.Account, error) {
 	query := `SELECT * FROM accounts
 				where id = $1
-				LIMIT 1`
+				LIMIT 1
+				FOR NO KEY UPDATE`
 	account := model.Account{}
 	if err := q.db.QueryRowContext(ctx, query, accountId).Scan(&account.ID, &account.Owner, &account.Balance, &account.Currency, &account.CreatedAt); err != nil {
 		log.Printf("getAccountByID storage err: %v", err)
