@@ -18,8 +18,12 @@ jobs:
         # Docker Hub image
         image: postgres
         # Provide the password for postgres
+        ports:
+          - 5432:5432
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: test
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
