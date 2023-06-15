@@ -7,13 +7,7 @@ import (
 	"bank/model"
 )
 
-type CreateAccountParams struct {
-	Owner    string `json:"owner"`
-	Balance  int    `json:"balance"`
-	Currency string `json:"currency"`
-}
-
-func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (model.Account, error) {
+func (q *Queries) CreateAccount(ctx context.Context, arg model.CreateAccountParams) (model.Account, error) {
 	query := `INSERT INTO accounts (owner,balance,currency)
 	VALUES($1,$2,$3)
 	RETURNING id,owner,balance,currency,created_at`

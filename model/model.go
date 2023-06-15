@@ -33,3 +33,10 @@ type TransferTxResult struct {
 	FromEntry   Entry    `json:"from_entry"`
 	ToEntry     Entry    `json:"to_entry"`
 }
+
+// Account go
+type CreateAccountParams struct {
+	Owner    string `json:"owner" binding:"required"`
+	Balance  int    `json:"balance"`
+	Currency string `json:"currency" binding:"required"`
+}

@@ -8,8 +8,9 @@ migrationup:
 	migrate -path ./migrations -database 'postgres://root:secret@localhost:5432/test?sslmode=disable' up
 migrationdown:
 	migrate -path ./migrations -database 'postgres://root:secret@localhost:5432/test?sslmode=disable' down
-
-.PHONY: postgres createdb dropdb migrationup migrationdown
+server:
+	go run main.go
+.PHONY: postgres createdb dropdb migrationup migrationdown server
 
 test:
 	go test -v -cover ./...
