@@ -2,6 +2,8 @@ package api
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"bank/model"
 
@@ -27,20 +29,17 @@ func (s *Server) CreateAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, account)
 }
 
-type getID struct {
-	Id int `uri:"id" binding:"required,min=1"`
-}
+// type getAccountRequest struct {
+// 	ID int `uri:"id"`
+// }
 
 func (s *Server) getAccountByID(ctx *gin.Context) {
-	var req getID
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		s.l.PrintError(err, map[string]string{
-			"getAccById err": err.Error(),
-		})
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	accountId := strings.TrimPrefix(ctx.Request.URL.Path, "/v1/accounts/")
+	id, err := strconv.Atoi(accountId)
+	if err != nil {
 		return
 	}
-	account, err := s.store.GetAccountById(ctx, req.Id)
+	account, err := s.store.GetAccountById(ctx, id)
 	if err != nil {
 		s.l.PrintError(err, map[string]string{
 			"account err": err.Error(),
