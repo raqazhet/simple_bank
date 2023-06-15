@@ -20,6 +20,7 @@ func NewServer(store *storage.Storage, l *jsonlog.Logger) *Server {
 	{
 		account.POST("/accounts", server.CreateAccount)
 		account.GET("/accounts/:id", server.getAccountByID)
+		account.GET("/accounts", server.getAllAccounts)
 	}
 	server.router = router
 	return server
