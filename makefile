@@ -1,3 +1,5 @@
+mock:
+	mockgen -destination storage/mock/store.go bank/storage Store
 migrate:
 	curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
 	mv migrate.linux-amd64 $GOPATH/bin/migrate
@@ -13,7 +15,7 @@ migrationdown:
 	migrate -path ./migrations -database 'postgres://root:secret@localhost:5432/test?sslmode=disable' down
 server:
 	go run main.go
-.PHONY: postgres createdb dropdb migrationup migrationdown server migrate
+.PHONY: postgres createdb dropdb migrationup migrationdown server migrate mock
 
 test:
 	go test -v -cover ./...
