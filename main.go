@@ -8,13 +8,9 @@ import (
 	"bank/api"
 	"bank/jsonlog"
 	"bank/storage"
+	"bank/util"
 
 	_ "github.com/lib/pq"
-)
-
-const (
-	dbdriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5432/test?sslmode=disable"
 )
 
 func main() {
@@ -24,8 +20,12 @@ func main() {
 }
 
 func run() error {
+	config, err := util.LoadConfig("./")
+	if err != nil {
+		return err
+	}
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
-	db, err := sql.Open(dbdriver, dbSource)
+	db, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		logger.PrintError(err, map[string]string{
 			"connect to db": err.Error(),
@@ -34,11 +34,12 @@ func run() error {
 	}
 	store := storage.NewStorage(db)
 	server := api.NewServer(store, logger)
-	if err := server.Start(":4000"); err != nil {
+	if err := server.Start(config.ServerAddress); err != nil {
 		logger.PrintError(err, map[string]string{
 			"start server": err.Error(),
 		})
 		return err
 	}
+
 	return nil
 }

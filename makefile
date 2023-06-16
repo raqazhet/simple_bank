@@ -1,3 +1,6 @@
+migrate:
+	curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+	mv migrate.linux-amd64 $GOPATH/bin/migrate
 postgres:
 	docker run --name test1 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD='secret' -d postgres
 createdb:
@@ -10,7 +13,7 @@ migrationdown:
 	migrate -path ./migrations -database 'postgres://root:secret@localhost:5432/test?sslmode=disable' down
 server:
 	go run main.go
-.PHONY: postgres createdb dropdb migrationup migrationdown server
+.PHONY: postgres createdb dropdb migrationup migrationdown server migrate
 
 test:
 	go test -v -cover ./...

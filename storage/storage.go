@@ -4,25 +4,29 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"bank/model"
 )
 
-//	type SqlSrore interface {
-//		Queries
-//		TransferTx(ctx context.Context, arg TransferTxParams) (model.TransferTxResult, error)
-//	}
-type Storage struct {
-	*Queries
-	db *sql.DB
-}
+type (
+	Store interface {
+		Querier
+		TransferTx(ctx context.Context, arg TransferTxParams) (model.TransferTxResult, error)
+	}
+	SqlStorage struct {
+		*Queries
+		db *sql.DB
+	}
+)
 
-func NewStorage(db *sql.DB) *Storage {
-	return &Storage{
+func NewStorage(db *sql.DB) Store {
+	return &SqlStorage{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
-func (r *Storage) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (r *SqlStorage) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err

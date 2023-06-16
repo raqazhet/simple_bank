@@ -16,7 +16,7 @@ type TransferTxParams struct {
 	Amount int `json:"amount"`
 }
 
-func (r *Storage) TransferTx(ctx context.Context, arg TransferTxParams) (model.TransferTxResult, error) {
+func (r *SqlStorage) TransferTx(ctx context.Context, arg TransferTxParams) (model.TransferTxResult, error) {
 	var result model.TransferTxResult
 	err := r.execTx(ctx, func(q *Queries) error {
 		var err error

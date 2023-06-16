@@ -8,12 +8,12 @@ import (
 )
 
 type Server struct {
-	store  *storage.Storage
+	store  storage.Store
 	router *gin.Engine
 	l      *jsonlog.Logger
 }
 
-func NewServer(store *storage.Storage, l *jsonlog.Logger) *Server {
+func NewServer(store storage.Store, l *jsonlog.Logger) *Server {
 	server := &Server{store: store, l: l}
 	router := gin.Default()
 	account := router.Group("/v1")
