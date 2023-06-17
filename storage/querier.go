@@ -8,6 +8,8 @@ import (
 
 type Querier interface {
 	AddAccountBalance(ctx context.Context, arg AddAccountBalance) (model.Account, error)
+	CreateUser(ctx context.Context, arg model.User) (model.User, error)
+	GetUser(ctx context.Context, username string) (model.User, error)
 	CreateAccount(ctx context.Context, arg model.CreateAccountParams) (model.Account, error)
 	CreateEntry(ctx context.Context, arg CreateEntryParams) (model.Entry, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (model.Transfer, error)
