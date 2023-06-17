@@ -38,5 +38,16 @@ type TransferTxResult struct {
 type CreateAccountParams struct {
 	Owner    string `json:"owner" binding:"required"`
 	Balance  int    `json:"balance"`
-	Currency string `json:"currency" binding:"required"`
+	Currency string `json:"currency" binding:"required,currency"`
+}
+
+// User struct
+
+type User struct {
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	Fullname          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }

@@ -20,11 +20,15 @@ func main() {
 }
 
 func run() error {
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 	config, err := util.LoadConfig("./")
 	if err != nil {
+		logger.PrintError(err, map[string]string{
+			"load config": err.Error(),
+		})
 		return err
 	}
-	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
+
 	db, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		logger.PrintError(err, map[string]string{
