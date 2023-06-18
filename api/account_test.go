@@ -61,6 +61,25 @@ func TestCreateAccountApi(t *testing.T) {
 	requireBodyMatchAccount(t, recorder.Body, account)
 }
 
+func TestGetAllAccountApi(t *testing.T) {
+	l := jsonlog.Logger{}
+	accounts := []model.Account{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	store := mock_storage.NewMockStore(ctrl)
+	store.EXPECT().
+		GetAllAccounts(gomock.Any()).Times(1).
+		Return(accounts, nil)
+	server := NewServer(store, &l)
+	recorder := httptest.NewRecorder()
+	ur1 := "/v1/accounts"
+	request, err := http.NewRequest(http.MethodGet, ur1, nil)
+	require.NoError(t, err)
+	server.router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusOK, recorder.Code)
+	require.NotEmpty(t, accounts)
+}
+
 func randomAccount() model.Account {
 	return model.Account{
 		ID:       util.RandomInt(1, 1000),
