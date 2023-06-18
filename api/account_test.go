@@ -38,46 +38,27 @@ func TestAccountAPI(t *testing.T) {
 	requireBodyMatchAccount(t, recorder.Body, account)
 }
 
-func TestGetAccountApi(t *testing.T) {
-	account := randomAccount()
-	testCases := []struct {
-		name          string
-		accountid     int
-		buildStubs    func(store *mock_storage.MockStore)
-		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
-	}{
-		{
-			name:      "ok",
-			accountid: account.ID,
-			buildStubs: func(store *mock_storage.MockStore) {
-				store.EXPECT().
-					GetAccountById(gomock.Any(), gomock.Eq(account.ID)).
-					Times(1).
-					Return(account, nil)
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recorder.Code)
-				require.Equal(t, recorder.Body, account)
-			},
-		},
-	}
+func TestCreateAccountApi(t *testing.T) {
 	l := jsonlog.Logger{}
-	for _, v := range testCases {
-		t.Run(v.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			store := mock_storage.NewMockStore(ctrl)
-			v.buildStubs(store)
-
-			server := NewServer(store, &l)
-			recorder := httptest.NewRecorder()
-			url := fmt.Sprintf("/v1/accounts/%d", account.ID)
-			request, err := http.NewRequest(http.MethodGet, url, nil)
-			require.NoError(t, err)
-			server.router.ServeHTTP(recorder, request)
-			v.checkResponse(t, recorder)
-		})
-	}
+	account := randomAccount()
+	account.Owner = "Razaq"
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	store := mock_storage.NewMockStore(ctrl)
+	store.EXPECT().
+		CreateAccount(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(account, nil)
+	server := NewServer(store, &l)
+	recorder := httptest.NewRecorder()
+	data, err := json.Marshal(account)
+	require.NoError(t, err)
+	url := "/v1/accounts/"
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+	require.NoError(t, err)
+	server.router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusOK, recorder.Code)
+	requireBodyMatchAccount(t, recorder.Body, account)
 }
 
 func randomAccount() model.Account {
