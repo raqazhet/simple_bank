@@ -21,12 +21,16 @@ func NewServer(store storage.Store, l *jsonlog.Logger) *Server {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
 	}
-	account := router.Group("/v1")
+	account := router.Group("/v1/accounts")
 	{
-		account.POST("/accounts", server.CreateAccount)
-		account.GET("/accounts/:id", server.getAccountByID)
-		account.GET("/accounts", server.getAllAccounts)
+		account.POST("/", server.CreateAccount)
+		account.GET("/:id", server.getAccountByID)
+		account.GET("/", server.getAllAccounts)
 		account.POST("/transfers", server.createTransfer)
+	}
+	user := router.Group("/v1/user")
+	{
+		user.POST("/", server.CreateUser)
 	}
 	server.router = router
 	return server

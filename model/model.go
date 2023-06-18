@@ -44,10 +44,10 @@ type CreateAccountParams struct {
 // User struct
 
 type User struct {
-	Username          string    `json:"username"`
-	HashedPassword    string    `json:"hashed_password"`
-	Fullname          string    `json:"full_name"`
-	Email             string    `json:"email"`
+	Username          string    `json:"username" binding:"required,alphanum"`
+	HashedPassword    string    `json:"hashed_password" binding:"required,min=8"`
+	Fullname          string    `json:"full_name" binding:"required"`
+	Email             string    `json:"email" binding:"required,email"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 }
