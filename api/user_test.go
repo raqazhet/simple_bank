@@ -3,9 +3,11 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"bank/jsonlog"
@@ -18,8 +20,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func EqCreateUserParams(arg model.User, password string) gomock.Matcher {
+	return eqCreateUserParamsMatcher{arg, password}
+}
+
+type Matcher interface {
+	// Matches returns whether x is a match
+	Matches(x interface{}) bool
+	// String describes what the matcher matches
+	String() string
+}
+type eqCreateUserParamsMatcher struct {
+	arg      model.User
+	password string
+}
+
+func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
+	arg, ok := x.(model.User)
+	if !ok {
+		return false
+	}
+	err := util.CHeckPassword(e.password, arg.HashedPassword)
+	if err != nil {
+		return false
+	}
+	e.arg.HashedPassword = arg.HashedPassword
+	return reflect.DeepEqual(e.arg, arg)
+}
+
+func (e eqCreateUserParamsMatcher) String() string {
+	return fmt.Sprintf("matches arg %v and password %v", e.arg, e.password)
+}
+
 func TestCreateUserApi(t *testing.T) {
 	user, password := randomUser(t)
+	// hashedPassword, err := util.HashedPassword(password)
+	// require.NoError(t, err)
 	testCases := []struct {
 		name          string
 		body          gin.H
@@ -35,8 +71,14 @@ func TestCreateUserApi(t *testing.T) {
 				"email":           user.Email,
 			},
 			buildStubs: func(store *mock_storage.MockStore) {
+				arg := model.User{
+					Username: user.Username,
+					// HashedPassword: hashedPassword,
+					Fullname: user.Fullname,
+					Email:    user.Email,
+				}
 				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Any()).
+					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).Return(user, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
