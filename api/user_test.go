@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"testing"
 
-	"bank/jsonlog"
 	"bank/model"
 	mock_storage "bank/storage/mock"
 	"bank/util"
@@ -90,12 +89,12 @@ func TestCreateUserApi(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
-			l := jsonlog.Logger{}
+			// l := jsonlog.Logger{}
 			ctr1 := gomock.NewController(t)
 			defer ctr1.Finish()
 			store := mock_storage.NewMockStore(ctr1)
 			tc.buildStubs(store)
-			server := NewServer(store, &l)
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 			data, err := json.Marshal(tc.body)
 			require.NoError(t, err)

@@ -12,22 +12,33 @@ import (
 )
 
 type Server struct {
+	config     util.Config
 	store      storage.Store
 	router     *gin.Engine
 	l          *jsonlog.Logger
 	tokenMaker token.Maker
 }
 
-func NewServer(store storage.Store, l *jsonlog.Logger) *Server {
+func NewServer(conf util.Config, store storage.Store, l *jsonlog.Logger) *Server {
 	tokenMaker, err := token.NewJwtMaker(util.RandomString(32))
 	if err != nil {
 		return nil
 	}
 	server := &Server{
+		config:     conf,
 		store:      store,
 		l:          l,
 		tokenMaker: tokenMaker,
 	}
+	server.setupRouter()
+	return server
+}
+
+func (srv *Server) Start(addres string) error {
+	return srv.router.Run(addres)
+}
+
+func (server *Server) setupRouter() {
 	router := gin.Default()
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
@@ -42,11 +53,7 @@ func NewServer(store storage.Store, l *jsonlog.Logger) *Server {
 	user := router.Group("/v1/user")
 	{
 		user.POST("/", server.CreateUser)
+		user.POST("/login", server.LoginUser)
 	}
 	server.router = router
-	return server
-}
-
-func (srv *Server) Start(addres string) error {
-	return srv.router.Run(addres)
 }

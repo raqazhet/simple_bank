@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"bank/jsonlog"
 	"bank/model"
 	mock_storage "bank/storage/mock"
 	"bank/util"
@@ -19,7 +18,7 @@ import (
 )
 
 func TestAccountAPI(t *testing.T) {
-	l := jsonlog.Logger{}
+	// l := jsonlog.Logger{}
 	account := randomAccount()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -28,7 +27,7 @@ func TestAccountAPI(t *testing.T) {
 		GetAccountById(gomock.Any(), gomock.Eq(account.ID)).
 		Times(1).
 		Return(account, nil)
-	server := NewServer(store, &l)
+	server := newTestServer(t, store)
 	recorder := httptest.NewRecorder()
 	url := fmt.Sprintf("/v1/accounts/%d", account.ID)
 	request, err := http.NewRequest(http.MethodGet, url, nil)
@@ -39,7 +38,7 @@ func TestAccountAPI(t *testing.T) {
 }
 
 func TestCreateAccountApi(t *testing.T) {
-	l := jsonlog.Logger{}
+	// l := jsonlog.Logger{}
 	account := randomAccount()
 	account.Owner = "Razaq"
 	ctrl := gomock.NewController(t)
@@ -49,7 +48,7 @@ func TestCreateAccountApi(t *testing.T) {
 		CreateAccount(gomock.Any(), gomock.Any()).
 		Times(1).
 		Return(account, nil)
-	server := NewServer(store, &l)
+	server := newTestServer(t, store)
 	recorder := httptest.NewRecorder()
 	data, err := json.Marshal(account)
 	require.NoError(t, err)
@@ -62,7 +61,7 @@ func TestCreateAccountApi(t *testing.T) {
 }
 
 func TestGetAllAccountApi(t *testing.T) {
-	l := jsonlog.Logger{}
+	// l := jsonlog.Logger{}
 	accounts := []model.Account{}
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -70,7 +69,7 @@ func TestGetAllAccountApi(t *testing.T) {
 	store.EXPECT().
 		GetAllAccounts(gomock.Any()).Times(1).
 		Return(accounts, nil)
-	server := NewServer(store, &l)
+	server := newTestServer(t, store)
 	recorder := httptest.NewRecorder()
 	ur1 := "/v1/accounts"
 	request, err := http.NewRequest(http.MethodGet, ur1, nil)

@@ -37,7 +37,7 @@ func run() error {
 		return err
 	}
 	store := storage.NewStorage(db)
-	server := api.NewServer(store, logger)
+	server := api.NewServer(config, store, logger)
 	if err := server.Start(config.ServerAddress); err != nil {
 		logger.PrintError(err, map[string]string{
 			"start server": err.Error(),
