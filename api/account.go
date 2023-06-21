@@ -5,19 +5,26 @@ import (
 	"errors"
 	"net/http"
 
+	"bank/token"
+
 	"bank/model"
 
 	"github.com/gin-gonic/gin"
 )
 
+type createAccountRequest struct {
+	Currency string `json:"currency" binding:"required,currency"`
+}
+
 func (s *Server) CreateAccount(ctx *gin.Context) {
-	var input model.CreateAccountParams
+	var input createAccountRequest
 	if err := ctx.BindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := model.CreateAccountParams{
-		Owner:    input.Owner,
+		Owner:    authPayload.Username,
 		Currency: input.Currency,
 		Balance:  0,
 	}
@@ -42,15 +49,6 @@ func (s *Server) getAccountByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	// accountId := strings.TrimPrefix(ctx.Request.URL.Path, "/v1/accounts/")
-	// id, err := strconv.Atoi(accountId)
-	// if err != nil {
-	// 	s.l.PrintError(err, map[string]string{
-	// 		"id": err.Error(),
-	// 	})
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
 	account, err := s.store.GetAccountById(ctx, req.Id)
 	if err != nil {
 		switch {
@@ -59,6 +57,12 @@ func (s *Server) getAccountByID(ctx *gin.Context) {
 		default:
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		}
+		return
+	}
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		err := errors.New("account doesn't belong to authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 

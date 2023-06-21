@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccountAPI(t *testing.T) {
+func TestGetAccountAPI(t *testing.T) {
 	// l := jsonlog.Logger{}
 	account := randomAccount()
 	ctrl := gomock.NewController(t)

@@ -40,10 +40,11 @@ func (srv *Server) Start(addres string) error {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+	router.Use(gin.Recovery())
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
 	}
-	account := router.Group("/v1/accounts")
+	account := router.Group("/v1/accounts").Use(authMidddleware(server.tokenMaker))
 	{
 		account.POST("/", server.CreateAccount)
 		account.GET("/:id", server.getAccountByID)
