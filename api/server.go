@@ -20,7 +20,7 @@ type Server struct {
 }
 
 func NewServer(conf util.Config, store storage.Store, l *jsonlog.Logger) *Server {
-	tokenMaker, err := token.NewJwtMaker(util.RandomString(32))
+	tokenMaker, err := token.NewJwtMaker(conf.TokenKey)
 	if err != nil {
 		return nil
 	}
