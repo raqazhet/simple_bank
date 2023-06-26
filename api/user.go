@@ -46,7 +46,7 @@ type loginUserRequest struct {
 }
 type loginUserResponse struct {
 	AccessToken string     `json:"access_token"`
-	Loginn      model.User `json:user`
+	Login       model.User `json:user`
 }
 
 func (s *Server) LoginUser(ctx *gin.Context) {
@@ -76,7 +76,7 @@ func (s *Server) LoginUser(ctx *gin.Context) {
 	}
 	rsp := loginUserResponse{
 		AccessToken: accsesToken,
-		Loginn:      user,
+		Login:       user,
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }
