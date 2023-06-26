@@ -80,31 +80,28 @@ func (s *Server) LoginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	refreshToken, refreshPayload, err := s.tokenMaker.CreateToken(req.Username, s.config.RefreshTokenDuration)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	session, err := s.store.SaveNewRefreshToken(context.TODO(), model.CreateSessionParams{
-		ID:           refreshPayload.ID,
-		Username:     user.Username,
-		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIp:     "",
-		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiredAt,
-	})
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// refreshToken, refreshPayload, err := s.tokenMaker.CreateToken(req.Username, s.config.RefreshTokenDuration)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+	// fmt.Println("refresh", refreshPayload.ID)
+	// session, err := s.store.SaveNewRefreshToken(context.Background(), model.CreateSessionParams{
+	// 	ID:           refreshPayload.ID,
+	// 	Username:     user.Username,
+	// 	RefreshToken: refreshToken,
+	// 	UserAgent:    "",
+	// 	ClientIp:     "",
+	// 	ExpiresAt:    refreshPayload.ExpiredAt,
+	// })
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 	rsp := loginUserResponse{
-		SessionID:             session.ID,
-		AccessToken:           accsesToken,
-		AccessTokenExpiresAt:  accesPayload.ExpiredAt,
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
-		User:                  user,
+		AccessToken:          accsesToken,
+		AccessTokenExpiresAt: accesPayload.ExpiredAt,
+		User:                 user,
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }

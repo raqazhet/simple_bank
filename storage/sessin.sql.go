@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"log"
 
 	"bank/model"
 
@@ -9,19 +10,12 @@ import (
 )
 
 func (q *Queries) SaveNewRefreshToken(ctx context.Context, arg model.CreateSessionParams) (model.CreateSessionParams, error) {
-	query := `INSERT INTO sessions (
-		id,
-		username,
-		refresh_token,
-		user_agent,
-		client_ip,
-		is_blocked,
-		expires_at
+	query := `INSERT INTO sessions (id,username,refresh_token,user_agent,client_ip,is_blocked,expires_at
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7
 	) RETURNING id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
 	`
-	args := []any{arg.ID, arg.Username, arg.RefreshToken, arg.UserAgent, arg.ClientIp, arg.IsBlocked, arg.ExpiresAt}
+	args := []any{arg.ID, arg.Username, arg.RefreshToken, arg.UserAgent, arg.ClientIp, arg.ExpiresAt}
 	var i model.CreateSessionParams
 	if err := q.db.QueryRowContext(ctx, query, args).Scan(
 		&i.ID,
@@ -30,8 +24,8 @@ func (q *Queries) SaveNewRefreshToken(ctx context.Context, arg model.CreateSessi
 		&i.UserAgent,
 		&i.ClientIp,
 		&i.IsBlocked,
-		&i.ExpiresAt,
-		&i.CreatedAt); err != nil {
+		&i.ExpiresAt); err != nil {
+		log.Println("saveNewRefreshToken err")
 		return model.CreateSessionParams{}, err
 	}
 	return i, nil

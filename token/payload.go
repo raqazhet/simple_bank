@@ -14,12 +14,12 @@ type Payload struct {
 }
 
 func NewPayload(username string, duration time.Duration) (*Payload, error) {
-	tolenId, err := uuid.NewRandom()
+	tokenId, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 	return &Payload{
-		ID:        tolenId,
+		ID:        tokenId,
 		Username:  username,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
