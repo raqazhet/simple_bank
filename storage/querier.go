@@ -19,6 +19,7 @@ type Querier interface {
 	GetEntry(ctx context.Context, id int) (model.Entry, error)
 	GetTransfer(ctx context.Context, id int) (model.Transfer, error)
 	GetAllAccounts(ctx context.Context) ([]model.Account, error)
+	SaveNewRefreshToken(ctx context.Context, arg model.CreateSessionParams) (model.CreateSessionParams, error)
 	// ListEntries(ctx context.Context, arg model.ListEntriesParams) ([]Entry, error)
 	// ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (model.Account, error)

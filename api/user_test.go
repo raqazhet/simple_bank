@@ -79,6 +79,8 @@ func TestCreateUserApi(t *testing.T) {
 				store.EXPECT().
 					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).Return(user, nil)
+				store.EXPECT().
+					SaveNewRefreshToken(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
