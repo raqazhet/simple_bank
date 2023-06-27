@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"bank/api"
+	"bank/gapi"
 	"bank/jsonlog"
 	"bank/pb"
 	"bank/storage"
@@ -13,6 +14,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -59,8 +61,8 @@ func runGinServer(config util.Config, store storage.Store) error {
 }
 
 func runGrpcServer(config util.Config, store storage.Store) {
-	l := jsonlog.Logger{}
+	server := gapi.NewServer(config, store)
 	grpcServer := grpc.NewServer()
-	server := api.NewServer(config, store, &l)
 	pb.RegisterSimpleBankServer(grpcServer, server)
+	reflection.Register(grpcServer)
 }
