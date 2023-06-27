@@ -7,15 +7,17 @@ import (
 
 	"bank/api"
 	"bank/jsonlog"
+	"bank/pb"
 	"bank/storage"
 	"bank/util"
 
 	_ "github.com/lib/pq"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal("cannot connect to db:", err)
+		log.Fatal("cannot connect to :", err)
 	}
 }
 
@@ -37,13 +39,28 @@ func run() error {
 		return err
 	}
 	store := storage.NewStorage(db)
-	server := api.NewServer(config, store, logger)
-	if err := server.Start(config.ServerAddress); err != nil {
+	if err := runGinServer(config, store); err != nil {
 		logger.PrintError(err, map[string]string{
-			"start server": err.Error(),
+			"runGinServerErr:": err.Error(),
 		})
 		return err
 	}
-
 	return nil
+}
+
+func runGinServer(config util.Config, store storage.Store) error {
+	l := jsonlog.Logger{}
+	server := api.NewServer(config, store, &l)
+	err := server.Start(config.ServerAddress)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func runGrpcServer(config util.Config, store storage.Store) {
+	l := jsonlog.Logger{}
+	grpcServer := grpc.NewServer()
+	server := api.NewServer(config, store, &l)
+	pb.RegisterSimpleBankServer(grpcServer, server)
 }
