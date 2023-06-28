@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net"
 	"os"
 
 	"bank/api"
@@ -41,11 +42,16 @@ func run() error {
 		return err
 	}
 	store := storage.NewStorage(db)
-	if err := runGinServer(config, store); err != nil {
+	// if err := runGinServer(config, store); err != nil {
+	// 	logger.PrintError(err, map[string]string{
+	// 		"runGinServerErr:": err.Error(),
+	// 	})
+	// 	return err
+	// }
+	if err := runGrpcServer(config, store); err != nil {
 		logger.PrintError(err, map[string]string{
-			"runGinServerErr:": err.Error(),
+			"runGrpcServerErr:": err.Error(),
 		})
-		return err
 	}
 	return nil
 }
@@ -53,16 +59,28 @@ func run() error {
 func runGinServer(config util.Config, store storage.Store) error {
 	l := jsonlog.Logger{}
 	server := api.NewServer(config, store, &l)
-	err := server.Start(config.ServerAddress)
+	err := server.Start(config.HTTPServerAddress)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func runGrpcServer(config util.Config, store storage.Store) {
+func runGrpcServer(config util.Config, store storage.Store) error {
 	server := gapi.NewServer(config, store)
 	grpcServer := grpc.NewServer()
 	pb.RegisterSimpleBankServer(grpcServer, server)
 	reflection.Register(grpcServer)
+	listener, err := net.Listen("tcp", config.GRPCServerAddress)
+	if err != nil {
+		log.Print("cannot create listener grpc")
+		return err
+	}
+	log.Printf("start gRPC server at %s", listener.Addr())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Printf("cannot start grpc server %v", err)
+		return err
+	}
+	return nil
 }
