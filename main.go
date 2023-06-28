@@ -10,15 +10,6 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
-
-
-
-
-
-
-
-	
-
 	"bank/api"
 	"bank/gapi"
 	"bank/jsonlog"
@@ -29,6 +20,7 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -102,7 +94,18 @@ func runGrpcServer(config util.Config, store storage.Store) error {
 
 func runGateWayServer(conf util.Config, store storage.Store) {
 	server := gapi.NewServer(conf, store)
-	grpcMux := runtime.NewServeMux()
+	/*protoc генерирует JSON поля в camel case.
+	Чтобы использовать тот же регистр, что и в proto файле, мы должны задать для параметра UseProtoNames значение true.
+	И это можно сделать передавая MarshalerOption при создании gRPC мультиплексора.*/
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+	grpcMux := runtime.NewServeMux(jsonOption)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	err := pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)

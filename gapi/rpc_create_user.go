@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"bank/model"
 	"bank/pb"
@@ -60,6 +61,8 @@ func (srv *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token %s", err)
 	}
+	meta := srv.extractMetadata(ctx)
+	fmt.Println(meta)
 	rsp := &pb.LoginUserResponse{
 		User:                 convertUser(user),
 		AccessToken:          accessToken,
