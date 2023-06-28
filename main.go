@@ -1,10 +1,23 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net"
+	"net/http"
 	"os"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+
+
+
+
+
+
+
+
+	
 
 	"bank/api"
 	"bank/gapi"
@@ -77,10 +90,37 @@ func runGrpcServer(config util.Config, store storage.Store) error {
 		return err
 	}
 	log.Printf("start gRPC server at %s", listener.Addr())
+	go runGateWayServer(config, store)
+
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Printf("cannot start grpc server %v", err)
 		return err
 	}
 	return nil
+}
+
+func runGateWayServer(conf util.Config, store storage.Store) {
+	server := gapi.NewServer(conf, store)
+	grpcMux := runtime.NewServeMux()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	err := pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
+	if err != nil {
+		log.Fatalf("cannot register handler server %v", err)
+	}
+	// Этот мультиплексор фактически будет получать HTTP-запросы от клиентов.
+	// Поэтому, чтобы преобразовать их в формат gRPC,
+	// нам придется перенаправить их в gRPC мультиплексор, который мы создали ранее.
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+	listener, err := net.Listen("tcp", conf.HTTPServerAddress)
+	if err != nil {
+		log.Fatalf("cannot create listener %s", err)
+	}
+	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatalf("cannot start HTTP gateway server %s", err)
+	}
 }
